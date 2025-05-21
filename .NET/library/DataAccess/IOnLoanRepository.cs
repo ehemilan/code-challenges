@@ -6,6 +6,6 @@ namespace OneBeyondApi.DataAccess
     public interface IOnLoanRepository
     {
         public IReadOnlyList<OnLoanViewModel> GetOnLoans();
-        public string OnLoanBookReturning(OnLoanBookReturningRequest request);
+        public Task<string> OnLoanBookReturning(OnLoanBookReturningRequest request);
     }
 }

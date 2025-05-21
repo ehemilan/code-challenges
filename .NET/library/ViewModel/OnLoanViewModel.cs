@@ -1,6 +1,7 @@
 ﻿using OneBeyondApi.Model;
 namespace OneBeyondApi.ViewModel
 {
+    // At Hewlett Packard was a base what I needed to follow. I know that MVC dos not have ViewModel classes but I can follow any solution, I think it is only file placing issue. 
     public class OnLoanViewModel
     {
         public BorrowerViewModel Borrower { get; set; }
