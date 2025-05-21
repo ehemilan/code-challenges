@@ -243,6 +243,8 @@ namespace OneBeyondApi.DataAccess
                     throw new ArgumentException("The following parameter is invalid: ", nameof(guid));
                 Guid? fineId;
                 BookStock? bookReturned;
+                string bookName;
+                string borrowerName;
                 using (var context = new LibraryContext())
                 {
                     bookReturned = context.Catalogue
@@ -251,9 +253,12 @@ namespace OneBeyondApi.DataAccess
                         .AsEnumerable()
                         .FirstOrDefault(w => w.Book.Id == guid && w.OnLoanTo != null );
 
-
                     if (bookReturned == null)
-                        throw new Exception("The book is not found in stock or it is not on loan at this barrower.");
+                        throw new Exception("The book is not found in stock or it is not on loan at any barrower.");
+
+                    bookName = bookReturned.Book.Name;
+
+                    borrowerName = bookReturned.OnLoanTo.Name;
 
                     fineId = await IsBookReturnedInTime(bookReturned);
 
@@ -281,8 +286,8 @@ namespace OneBeyondApi.DataAccess
                 }
 
                 return fineId == null ?
-                    bookReturned.Book.Name + " - book returned successfully by " + bookReturned.OnLoanTo.Name :
-                    bookReturned.OnLoanTo.Name + " must pay a fine because not returned " + bookReturned.Book.Name + " in time. Fine created with id: " + fineId;
+                    bookName + " - book returned successfully by " + borrowerName :
+                    borrowerName + " must pay a fine because not returned " + bookName + " in time. Fine created with id: " + fineId;
             }
             catch (Exception ex)
             {

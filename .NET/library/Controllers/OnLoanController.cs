@@ -62,9 +62,9 @@ namespace OneBeyondApi.Controllers
 
         [HttpPost]
         [Route("JoinOnLoanQueueById")]
-        public string JoinOnLoanQueueById([FromBody] Guid? BookId, Guid? borrowerId)
+        public string JoinOnLoanQueueById([FromBody] JoinOnLoanQueueById request)
         {
-            return _onLoanRepository.JoinOnLoanQueueById( BookId, borrowerId);
+            return _onLoanRepository.JoinOnLoanQueueById( request.BookId, request.BorrowerId);
         }
 
         [HttpGet]
