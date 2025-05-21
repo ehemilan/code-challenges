@@ -20,7 +20,7 @@ namespace OneBeyondApi.Controllers
             _onLoanRepository = onLoanRepository;
         }
 
-    
+
         [HttpGet]
         [Route("GetOnLoan")]
         public IReadOnlyList<OnLoanViewModel> GetOnLoans()
@@ -50,6 +50,31 @@ namespace OneBeyondApi.Controllers
         public IReadOnlyList<OnLoanQueueViewModel> GetLoanQueue(string? bookName)
         {
             return _onLoanRepository.GetLoanQueue(bookName);
+        }
+
+
+        [HttpPost]
+        [Route("OnLoanBookReturningById")]
+        public Task<string> OnLoanBookReturningById([FromBody] Guid? bookId)
+        {
+            return _onLoanRepository.OnLoanBookReturningById(bookId);
+        }
+
+        [HttpPost]
+        [Route("JoinOnLoanQueueById")]
+        public string JoinOnLoanQueueById([FromBody] Guid? BookId, Guid? borrowerId)
+        {
+            return _onLoanRepository.JoinOnLoanQueueById( BookId, borrowerId);
+        }
+
+        [HttpGet]
+        [Route("GetLoanQueueById")]
+
+        public IReadOnlyList<OnLoanQueueViewModel> GetLoanQueueById(Guid? bookId)
+        {
+
+            return _onLoanRepository.GetLoanQueueById(bookId);
+
         }
     }
 }

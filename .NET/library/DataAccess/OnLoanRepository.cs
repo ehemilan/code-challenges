@@ -233,6 +233,157 @@ namespace OneBeyondApi.DataAccess
             return onLoanList;
         }
 
-        // TODO: get elements by id instead of names.
+        // TODO: get elements by id instead of names. If guid is not sensitive for send out.
+
+        public async Task<string> OnLoanBookReturningById(Guid? guid)
+        {
+            try
+            {
+                if (guid == null)
+                    throw new ArgumentException("The following parameter is invalid: ", nameof(guid));
+                Guid? fineId;
+                BookStock? bookReturned;
+                using (var context = new LibraryContext())
+                {
+                    bookReturned = context.Catalogue
+                        .Include(x => x.Book)
+                        .Include(x => x.OnLoanTo)
+                        .AsEnumerable()
+                        .FirstOrDefault(w => w.Book.Id == guid && w.OnLoanTo != null );
+
+
+                    if (bookReturned == null)
+                        throw new Exception("The book is not found in stock or it is not on loan at this barrower.");
+
+                    fineId = await IsBookReturnedInTime(bookReturned);
+
+
+                    OnLoanQueue? queueForThisBook = context.OnLoanQueue
+                        .Include(x => x.Book)
+                        .Include(x => x.Borrower)
+                        .AsEnumerable()
+                        .FirstOrDefault(w => w.Book.Id == guid);
+
+                    if (queueForThisBook != null)
+                    {
+                        bookReturned.OnLoanTo = queueForThisBook.Borrower;
+                        bookReturned.LoanEndDate = DateTime.Now.Date.AddDays(7);
+                        context.OnLoanQueue.Remove(queueForThisBook);
+                    }
+                    else
+                    {
+
+                        bookReturned.OnLoanTo = null;
+                        bookReturned.LoanEndDate = null;
+                    }
+                    context.Catalogue.Update(bookReturned);
+                    context.SaveChanges();
+                }
+
+                return fineId == null ?
+                    bookReturned.Book.Name + " - book returned successfully by " + bookReturned.OnLoanTo.Name :
+                    bookReturned.OnLoanTo.Name + " must pay a fine because not returned " + bookReturned.Book.Name + " in time. Fine created with id: " + fineId;
+            }
+            catch (Exception ex)
+            {
+                return "There is an issue at returning: " + ex;
+            }
+
+        }
+
+     
+        public string JoinOnLoanQueueById(Guid? bookId, Guid? borrowerId)
+        {
+            try
+            {
+
+
+
+                IReadOnlyList<OnLoanQueueViewModel> inQueue = GetLoanQueueById(bookId);
+
+                if (!inQueue.Any())
+                {
+                    return "The book is at library. You can feel to free to borrow it.";
+                }
+                Borrower? borrower;
+                Book? book;
+                using (var context = new LibraryContext())
+                {
+                    borrower = context.Borrowers.AsEnumerable().FirstOrDefault(f => f.Id == borrowerId);
+                    book = context.Books.AsEnumerable().FirstOrDefault(f => f.Id == bookId);
+
+                    if (borrower == null)
+                        throw new Exception("Borrower was not found: " + borrower.Name);
+
+                    if (book == null)
+                        throw new Exception("Book was not found: " + borrower.Name);
+
+                    if (context.OnLoanQueue
+                       .Include(x => x.Borrower)
+                       .AsEnumerable()
+                       .Any(a => a.Borrower.Id == borrowerId))
+                        throw new Exception(borrower.Name + " is already in the queue of book: " + book.Name);
+
+                    context.OnLoanQueue.Add(new OnLoanQueue
+                    {
+                        Borrower = borrower,
+                        Book = book,
+
+                    });
+                    context.SaveChanges();
+
+                }
+
+
+                return borrower.Name + " joined to queue for " + book.Name + ". Number in Queue: " + inQueue.Count;
+            }
+            catch (Exception ex)
+            {
+                return "There is an issue at returning: " + ex;
+            }
+        }
+
+        public IReadOnlyList<OnLoanQueueViewModel> GetLoanQueueById(Guid? bookId)
+        {
+
+            if (bookId == null)
+                throw new Exception("Book name was not given.");
+
+            List<OnLoanQueueViewModel> onLoanList = new List<OnLoanQueueViewModel> { };
+
+            using (var context = new LibraryContext())
+            {
+                BookStock? bookStockInfo = context.Catalogue.Include(x => x.Book).Include(x => x.OnLoanTo).AsEnumerable().FirstOrDefault(f => f.Book.Id == bookId);
+
+                if (bookStockInfo == null)
+                    throw new Exception("Wrong book name was given.");
+
+                if (bookStockInfo.LoanEndDate == null || bookStockInfo.OnLoanTo == null)
+                    return onLoanList;
+
+                IEnumerable<OnLoanQueue> queueForThisBook = context.OnLoanQueue
+                        .Include(x => x.Book)
+                        .Include(x => x.Borrower)
+                        .AsEnumerable()
+                        .Where(w => w.Book.Id == bookId);
+
+                //Estimated end date that the borrower returns it in loan date
+                onLoanList.Add(new OnLoanQueueViewModel(bookStockInfo.OnLoanTo, bookStockInfo.Book, bookStockInfo.LoanEndDate.Value));
+
+                int queueNum = 1;
+
+                foreach (OnLoanQueue queue in queueForThisBook)
+                {
+
+                    onLoanList.Add(new OnLoanQueueViewModel(queue.Borrower, queue.Book, bookStockInfo.LoanEndDate.Value.AddDays(7 * queueNum)));
+
+                    queueNum++;
+
+                }
+
+            }
+
+            return onLoanList;
+        }
     }
 }
