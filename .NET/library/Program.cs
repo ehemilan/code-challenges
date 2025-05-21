@@ -7,6 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<IAuthorRepository, AuthorRepository>();
 builder.Services.AddScoped<IBookRepository, BookRepository>();
 builder.Services.AddScoped<IBorrowerRepository, BorrowerRepository>();
+builder.Services.AddScoped<IOnLoanRepository, OnLoanRepository>();
 builder.Services.AddScoped<ICatalogueRepository, CatalogueRepository>();
 
 // Seed test data into memory DB

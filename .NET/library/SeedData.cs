@@ -43,7 +43,13 @@ namespace OneBeyondApi
                 Author = margaretJones,
                 ISBN = "3134324111"
             };
-
+            var wonderBook = new Book
+            {
+                Name = "Magical Cookbook",
+                Format = BookFormat.Paperback,
+                Author = margaretJones,
+                ISBN = "31343241112"
+            };
             var daveSmith = new Borrower
             {
                 Name = "Dave Smith",
@@ -75,6 +81,12 @@ namespace OneBeyondApi
                 OnLoanTo = lianaJames,
                 LoanEndDate = DateTime.Now.Date.AddDays(7)
             };
+            var bookOnLoanUntilNextWeekForSamePerson = new BookStock
+            {
+                Book = wonderBook,
+                OnLoanTo = lianaJames,
+                LoanEndDate = DateTime.Now.Date.AddDays(7)
+            };
 
             var rustBookStock = new BookStock
             {
@@ -100,6 +112,7 @@ namespace OneBeyondApi
                 context.Catalogue.Add(bookOnLoanUntilToday);
                 context.Catalogue.Add(bookNotOnLoan);
                 context.Catalogue.Add(bookOnLoanUntilNextWeek);
+                context.Catalogue.Add(bookOnLoanUntilNextWeekForSamePerson);
                 context.Catalogue.Add(rustBookStock);
 
                 context.SaveChanges();
