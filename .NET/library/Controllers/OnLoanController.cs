@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OneBeyondApi.DataAccess;
 using OneBeyondApi.Model;
+using OneBeyondApi.Request;
 using OneBeyondApi.ViewModel;
 using System.Collections;
 
@@ -27,5 +28,12 @@ namespace OneBeyondApi.Controllers
             return _onLoanRepository.GetOnLoans();
         }
 
+        // All books need different name to work my solution. There are a different way in my head. We can use book Id but it is ugly and unreal solution. 
+        [HttpPost]
+        [Route("OnLoanBookReturning")]
+        public string OnLoanBookReturning([FromBody] OnLoanBookReturningRequest request)
+        {
+            return _onLoanRepository.OnLoanBookReturning(request);
+        }
     }
 }
