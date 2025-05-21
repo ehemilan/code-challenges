@@ -35,5 +35,21 @@ namespace OneBeyondApi.Controllers
         {
             return _onLoanRepository.OnLoanBookReturning(request);
         }
+
+        // All books need different name to work my solution. There are a different way in my head. We can use book Id but it is ugly and unreal solution. 
+        [HttpPost]
+        [Route("JoinOnLoanQueue")]
+        public string JoinOnLoanQueue([FromBody] JoinOnLoanRequest request)
+        {
+            return _onLoanRepository.JoinOnLoanQueue(request);
+        }
+
+        [HttpGet]
+        [Route("GetLoanQueue")]
+
+        public IReadOnlyList<OnLoanQueueViewModel> GetLoanQueue(string? bookName)
+        {
+            return _onLoanRepository.GetLoanQueue(bookName);
+        }
     }
 }
